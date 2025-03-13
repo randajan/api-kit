@@ -1,8 +1,8 @@
 {
-  "name": "@randajan/fetch-json",
+  "name": "@randajan/api-kit",
   "version": "1.0.1",
   "description": "A lightweight wrapper around fetch that always returns a structured JSON response, handling errors and network issues gracefully",
-  "repository": "randajan/fetch-json",
+  "repository": "randajan/api-kit",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -12,7 +12,9 @@
   "license": "MIT",
   "peerDependencies": {},
   "devDependencies": {
-    "@randajan/simple-lib": "^2.4.0"
+    "@randajan/simple-lib": "^2.4.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
   },
   "files": [
     "dist",
@@ -31,14 +33,16 @@
     "wrapper",
     "error-handling"
   ],
-  "homepage": "https://github.com/randajan/fetch-json",
+  "homepage": "https://github.com/randajan/api-kit",
   "bugs": {
-    "url": "https://github.com/randajan/fetch-json/issues"
+    "url": "https://github.com/randajan/api-kit/issues"
   },
   "author": {
     "name": "Jan Randa",
     "email": "jnranda@gmail.com",
     "url": "https://www.linkedin.com/in/randajan/"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@randajan/props": "^0.1.3"
+  }
 }
