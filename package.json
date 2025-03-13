@@ -1,0 +1,44 @@
+{
+  "name": "@randajan/fetch-json",
+  "version": "1.0.0",
+  "description": "A lightweight wrapper around fetch that always returns a structured JSON response, handling errors and network issues gracefully",
+  "repository": "randajan/fetch-json",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "license": "MIT",
+  "peerDependencies": {},
+  "devDependencies": {
+    "@randajan/simple-lib": "^2.4.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "fetch",
+    "json",
+    "http",
+    "api",
+    "network",
+    "request",
+    "rest",
+    "ajax",
+    "wrapper",
+    "error-handling"
+  ],
+  "homepage": "https://github.com/randajan/fetch-json",
+  "bugs": {
+    "url": "https://github.com/randajan/fetch-json/issues"
+  },
+  "author": {
+    "name": "Jan Randa",
+    "email": "jnranda@gmail.com",
+    "url": "https://www.linkedin.com/in/randajan/"
+  },
+  "dependencies": {}
+}
