@@ -5,5 +5,6 @@ import createFetch from "../../../dist/client";
 
 
 window.fetchApi = createFetch({
-    url:`http://localhost:${info.port+1}/api`
+    url:`http://localhost:${info.port+1}/`,
+    timeout:1000
 });

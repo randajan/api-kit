@@ -18,7 +18,10 @@ export const mrgOpt = (a, b)=>{
 }
 
 export const toStr = s=>s == null ? "" : String(s);
-export const mrgStr = (a, b)=>toStr(a)+toStr(b);
+export const mrgStr = (a, b, sep="")=>{
+    a = toStr(a); b = toStr(b);
+    return (a && b) ? a+sep+b : a+b;
+};
 
 let _regexp = /^https?:\/\//i;
 export const buildUrl = (inputUrl, params)=>{

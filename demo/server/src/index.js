@@ -14,12 +14,20 @@ app.use(express.json());
 app.use(cors());
 
 app.get('/api', async (req, res) => {
-    const outcome = await api(3, _=>{
-        throw new ApiError(1, "WHAT THE FUCK");
+    const body = await api(3, _=>{
+        return new ApiError(56, "WHAT THE FUCK");
+
     });
 
-    res.send(outcome);
-    res.status = outcome.status;
+    res.send(body);
+});
+
+app.get('/timeout', async (req, res) => {
+    console.log("f");
+});
+
+app.get("/fake", (req, res)=>{
+    res.send({error:"fuck"});
 });
 
 app.listen(PORT, () => {

@@ -10,10 +10,10 @@ export class Fetch extends Functionable {
 
     constructor(config = {}) {
         
-        const _url = config?.url || "";
-        const _fetch = config?.fetch || globalThis.fetch;
+        const _url = config.url || "";
+        const _fetch = config.fetch || globalThis.fetch;
 
-        if (!_fetch) { throw Error("Missing fetch function. Please provide it in constructor config"); }
+        if (!_fetch) { throw new Error("Missing fetch function. Please provide it inconfig"); }
 
         if (config) {
             delete config.url;

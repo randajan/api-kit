@@ -1,7 +1,8 @@
-import { cached } from "@randajan/props";
-import { buildUrl } from "../../arc/tool";
+import { solid } from "@randajan/props";
+import { buildUrl, mrgStr } from "../../arc/tool";
+import { ApiError } from "../../arc/class/ApiError";
 
-export const fetchExtra = async (_fetch, url, opt, method) => {
+export const fetchExtra = (_fetch, url, opt, method)=>{
 
     if (method) { opt.method = method; }
     opt.headers['Accept'] = 'application/json';
@@ -11,40 +12,65 @@ export const fetchExtra = async (_fetch, url, opt, method) => {
         opt.body = JSON.stringify(opt.body);
     }
 
-    let resp, raw, json;
-
-    if (opt.trait) { opt = opt.trait(opt); delete opt.trait; }
-
-    try {
-        resp = await _fetch(buildUrl(url, opt.params), opt);
-        raw = await resp.text();
-    } catch (e) {
-        const error = e.message || "Network error"; //TODO
-        console.error("❌ Fetch Error:", {
-            name: e.name,
-            message: e.message,
-            type: e.constructor.name,
-            stack: e.stack,
-            cause: e.cause || "N/A",
-            fullError: JSON.stringify(e, Object.getOwnPropertyNames(e)),
-        });
-        return Object.freeze({ ok: false, headers:{}, error });
+    const hasTimeout = opt.timeout > 0;
+    if (opt.abortable || hasTimeout) {
+        opt.abortController = new AbortController();
+        opt.signal = opt.abortController.signal;
     }
 
-    // Pokud server vrátil JSON, pokusíme se ho naparsovat
-    if (raw && resp.headers.get("Content-Type")?.includes("application/json")) {
-        try { json = JSON.parse(raw); }
-        catch { json = { error: "Invalid JSON" }; } //TODO
+    let int;
+    if (hasTimeout) {
+        int = setTimeout(() => opt.abortController?.abort(new ApiError(1, "Timeout")), opt.timeout);
     }
 
-    const { status, headers, statusText } = resp;
+    if (opt.trait) { opt = opt.trait(opt); }
 
-    if (!json) { json = { error: raw || statusText || "Unknown error" }; }
+    const prom = fetchExe(_fetch, url, opt);
 
-    json.ok = !json.error;
-    json.status = status;
-    cached(json, {}, "headers", _=>Object.freeze(Object.fromEntries(headers.entries())));
+    if (hasTimeout) { prom.finally(_=>clearTimeout(int)); }
+    if (!opt.abortable) { return prom; }
 
+    return solid(prom, "abort", _=>opt.abortController?.abort(new ApiError(2, "Aborted")));
+
+}
+
+const fetchExe = async (_fetch, url, opt) => {
+
+    let resp, body;
+
+    try { resp = await _fetch(buildUrl(url, opt.params), opt); }
+    catch (err) { return localReject(opt, ApiError.is(err) ? err : ApiError.to(0, "Failed")); }
+
+    const { ok, status, headers, statusText } = resp;
+
+    try { body = await resp.json(); }
+    catch { return localReject(opt, new ApiError(ok?3:4, ok?"Unreadable" : (statusText || status)), status); }
+
+    body.ok = !body.error;
+    body.status = status;
+
+    if (body.error) {
+        const { code, message } = body.error;
+        body.error = new ApiError(code || mrgStr(opt.code || 0, "1.0", "."), message || body.error );
+    }
     
-    return Object.freeze(json);
+    if (opt.attachHeaders) {
+        body.headers = Object.freeze(Object.fromEntries(headers.entries()));
+    }
+    
+    return Object.freeze(body);
 };
+
+
+
+export const localReject = (opt, error, status)=>{
+    const { code } = error;
+
+    if (code == 0) { status = 503 } //failed
+    else if (code == 1) { status = 408; } //timeout
+    else if (code == 2) { status = 499; } //aborted
+    else if (code == 3) { status = 415; } //unreadable
+
+    error.rise(0).rise(opt.code || 0);
+    return Object.freeze({ ok:false, status, error });
+}

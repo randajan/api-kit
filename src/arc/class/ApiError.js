@@ -6,18 +6,21 @@ import { mrgStr, toStr } from "../tool";
 export class ApiError extends Error {
 
     static create(code, message) { return new ApiError(code, message); }
-    static to(any) {
-        if (any instanceof ApiError) { return any; }
+
+    static is(any) { return any instanceof ApiError; }
+
+    static to(code, any) {
+        if (ApiError.is(any)) { return any; }
        
         const msg = toStr(any?.message || any) || "Unknown";
-        const apierr = ApiError.create(0, code);
+        const apierr = ApiError.create(code, msg);
         return solid(apierr, "stack", any.stack, false);
     }
 
     constructor(code, message) {
         super(message);
 
-        safe(this, {}, "code", (t, f)=>mrgStr(t, f));
+        safe(this, {}, "code", (t, f)=>mrgStr(t, f, "."));
 
         this.rise(code);
     }
@@ -30,6 +33,11 @@ export class ApiError extends Error {
     toJSON() {
         const { message } = this;
         return {message, ...this};
+    }
+
+    toString() {
+        const { message, code } = this;
+        return message + (!code ? "" : ` (${code})`);
     }
 
 }

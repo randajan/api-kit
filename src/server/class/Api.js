@@ -1,6 +1,7 @@
 import { solid } from "@randajan/props";
 import { Functionable } from "../../arc/class/Functionable";
 import { apiAsync, apiSync } from "./static";
+import { mrgOpt } from "../../arc/tool";
 
 
 
@@ -18,4 +19,6 @@ export class Api extends Functionable {
         Object.freeze(config);
         solid(this, "config", config);
     }
+
+    extend(config) { return new Api(mrgOpt(this.config, config)); }
 }
