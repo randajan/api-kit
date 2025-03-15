@@ -1,13 +1,13 @@
 {
   "name": "@randajan/api-kit",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A lightweight wrapper around fetch that always returns a structured JSON response, handling errors and network issues gracefully",
   "repository": "randajan/api-kit",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist//index.js",
   "exports": {
-    ".":"./dist/index.js",
+    ".": "./dist/index.js",
     "./server": "./dist/server/index.js",
     "./client": "./dist/client/index.js"
   },
