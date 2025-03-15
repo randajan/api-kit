@@ -1,6 +1,6 @@
 
 import { info, log } from "@randajan/simple-lib/web";
-import createFetch from "../../../dist/client";
+import createFetch from "../../../dist/esm/client";
 
 
 

@@ -4,17 +4,26 @@
   "description": "A lightweight wrapper around fetch that always returns a structured JSON response, handling errors and network issues gracefully",
   "repository": "randajan/api-kit",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist//index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "exports": {
-    ".": "./dist/index.js",
-    "./server": "./dist/server/index.js",
-    "./client": "./dist/client/index.js"
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./server": {
+      "import": "./dist/esm/server/index.js",
+      "require": "./dist/cjs/server/index.js"
+    },
+    "./client": {
+      "import": "./dist/esm/client/index.js",
+      "require": "./dist/cjs/client/index.js"
+    }
   },
   "license": "MIT",
   "peerDependencies": {},
   "devDependencies": {
-    "@randajan/simple-lib": "^2.4.0",
+    "@randajan/simple-lib": "^3.0.0",
     "cors": "^2.8.5",
     "express": "^4.21.2"
   },

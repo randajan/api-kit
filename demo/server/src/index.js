@@ -1,6 +1,6 @@
 import { info } from '@randajan/simple-lib/node';
 import express from 'express';
-import createApi, { ApiError } from "../../../dist/server/index";
+import createApi, { ApiError } from "../../../dist/esm/server/index";
 import cors from "cors";
 
 const app = express();
