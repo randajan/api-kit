@@ -48,7 +48,7 @@ const fetchExe = async (_fetch, url, opt) => {
 
     let resp, body;
 
-    try { resp = await _fetch(buildUrl(url, opt.query), opt); }
+    try { resp = await _fetch(buildUrl( mrgStr(opt.url, url), opt.query), opt); }
     catch (err) { return localReject(opt, ApiError.is(err) ? err : ApiError.to(0, "Failed")); }
 
     const { ok, status, headers, statusText } = resp;

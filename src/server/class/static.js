@@ -15,7 +15,7 @@ const apiAsync = async (exe, opt)=>apiExit(await tryFnAsync(exe), opt);
 export const apiResolve = (exe, opt)=>{
     start(opt);
 
-    if (isFn(opt.trait)) { opt = opt.trait(opt) || opt; }
+    opt = opt.trait(opt) || opt;
 
     if (opt.isAsync) { return apiAsync(exe, opt); }
 

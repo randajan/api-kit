@@ -2,6 +2,7 @@ import { solid } from "@randajan/props";
 import { Functionable } from "../../arc/class/Functionable";
 import { apiResolve } from "./static";
 import { mrgObj } from "../../arc/tool";
+import { configTrait } from "../../arc/opt";
 
 //options: code, isAsync, timestamp, trait, onError, throwError
 
@@ -10,6 +11,8 @@ export class Api extends Functionable {
     static create(config={}) { return new Api(config); }
 
     constructor(config={}) {
+
+        configTrait(config);
         
         super((exe, opt)=>apiResolve(exe, mrgObj(config, opt)));
 
