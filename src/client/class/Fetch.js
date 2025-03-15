@@ -4,8 +4,6 @@ import { solid } from "@randajan/props";
 import { mrgOpt } from "../tool";
 import { configTrait } from "../../arc/opt";
 
-//config: code, url, fetch, query, parseHeaders, trait, timestamp, onError
-
 export class Fetch extends Functionable {
 
     static create(config={}) { return new Fetch(config) }

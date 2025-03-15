@@ -26,11 +26,11 @@ const endTime = (body, startAt)=>{
 }
 
 export const end = (body, opt)=>{
-    if (body.error) {
-        if (isFn(opt.onError)) { opt.onError(body, opt); }
-        if (opt.throwError) { console.log(body.error.stack); throw body.error; }
+    if (!body.error){
+        if (isFn(opt.onOk)) { opt.onOk(body, opt); }
     } else {
-        if (isFn(opt.onOk)) { opt.onError(body, opt); }
+        if (isFn(opt.onError)) { opt.onError(body, opt); }
+        if (opt.throwError) { throw body.error; }
     }
 
     endTime(body, opt.startAt);

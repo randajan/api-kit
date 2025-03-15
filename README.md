@@ -20,6 +20,7 @@ const apiReponder = ({
     isAsync:false,
     timestamp:false,
     trait:(opt)=>opt,
+    onOk:(resp, opt)=>{},
     onError:(resp, opt)=>{ },
     throwError:false
 });
@@ -38,9 +39,11 @@ const apiFetch = createFetch({
     url:"",
     fetch:globalThis.fetch,
     query:{},
-    parseHeaders:false,
-    timestamp:false,
+    parseHeaders:false,             //if true it will parse response headers
+    resultOnly:false,               //if true it will return only result
+    timestamp:false,                //if true it will calculate timestamps
     trait:(opt)=>opt,
+    onOk:(resp, opt)=>{},
     onError:(resp, opt)=>{ },
     throwError:false
 });

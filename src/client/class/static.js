@@ -68,7 +68,8 @@ const fetchExe = async (_fetch, url, opt) => {
         body.headers = Object.freeze(Object.fromEntries(headers.entries()));
     }
     
-    return end(body, opt);
+    const r = end(body, opt);
+    return opt.resultOnly ? r.result : r;
 };
 
 export const fetchResolve = (_fetch, url, opt, method)=>{
