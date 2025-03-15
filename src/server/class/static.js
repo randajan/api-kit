@@ -1,33 +1,25 @@
 import { ApiError } from "../../arc/class/ApiError"
+import { start, end } from "../../arc/main";
+import { isFn, isProm } from "../../arc/tool";
+import { tryFn, tryFnAsync } from "../tool";
 
 
+const apiExit = (resp, opt)=>{
+    if (resp.error) { resp.error = ApiError.to(0, resp.error).rise(1).rise(opt.code); }
 
-export const apiAsync = async (config, code, exe)=>{
-    let result, error;
-
-        
-    try { result = await (exe instanceof Function ? exe() : exe); }
-    catch(err) { error = ApiError.to(0, err).rise(1).rise(code); }
-
-    if (ApiError.is(result)) { error = result; result = undefined; }
-
-    return Object.freeze({
-        result,
-        error,
-    });
-
+    return end(resp, opt);
 }
 
-export const apiSync = async (config, code, exe)=>{
-    let result, error;
+const apiAsync = async (exe, opt)=>apiExit(await tryFnAsync(exe), opt);
 
-        
-    try { result = (exe instanceof Function ? exe() : exe); }
-    catch(err) { error = ApiError.to(0, err).rise(1).rise(code); }
+export const apiResolve = (exe, opt)=>{
+    start(opt);
 
-    return Object.freeze({
-        result,
-        error,
-    });
+    if (isFn(opt.trait)) { opt = opt.trait(opt) || opt; }
 
+    if (opt.isAsync) { return apiAsync(exe, opt); }
+
+    const resp = tryFn(exe);
+    if (!isProm(resp)) { return apiExit(resp, opt); } 
+    return resp.then((resp)=>apiExit(resp, opt));
 }

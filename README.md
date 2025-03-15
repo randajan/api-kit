@@ -6,13 +6,47 @@ JavaScript library for rendering structured data in HTML format. It supports aut
 
 ## Installation
 
+
+## Usage
+
+### Server
 You can use the library as an ES module:
 
 ```javascript
-import fetchJson from "@randajan/api-kit";
+import createApi from "@randajan/api-kit/server";
+
+const apiReponder = ({
+    code:0,
+    isAsync:false,
+    timestamp:false,
+    trait:(opt)=>opt,
+    onError:(resp, opt)=>{ },
+    throwError:false
+});
+
+
 ```
 
-## Usage
+### Client
+You can use the library as an ES module:
+
+```javascript
+import createFetch from "@randajan/api-kit/client";
+
+const apiFetch = createFetch({
+    code:0,
+    url:"",
+    fetch:globalThis.fetch,
+    query:{},
+    parseHeaders:false,
+    timestamp:false,
+    trait:(opt)=>opt,
+    onError:(resp, opt)=>{ },
+    throwError:false
+});
+
+
+```
 
 
 

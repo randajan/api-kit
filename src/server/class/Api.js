@@ -1,10 +1,9 @@
 import { solid } from "@randajan/props";
 import { Functionable } from "../../arc/class/Functionable";
-import { apiAsync, apiSync } from "./static";
-import { mrgOpt } from "../../arc/tool";
+import { apiResolve } from "./static";
+import { mrgObj } from "../../arc/tool";
 
-
-
+//options: code, isAsync, timestamp, trait, onError, throwError
 
 export class Api extends Functionable {
 
@@ -12,13 +11,16 @@ export class Api extends Functionable {
 
     constructor(config={}) {
         
-        const { isSync } = config;
-
-        super(isSync ? (code, exe)=>apiSync(config, code, exe) : (code, exe)=>apiAsync(config, code, exe));
+        super((exe, opt)=>apiResolve(exe, mrgObj(config, opt)));
 
         Object.freeze(config);
         solid(this, "config", config);
     }
 
-    extend(config) { return new Api(mrgOpt(this.config, config)); }
+    code(code, exe, opt={}) {
+        opt.code = code;
+        return this(exe, opt);
+    }
+
+    extend(config) { return new Api(mrgObj(this.config, config)); }
 }

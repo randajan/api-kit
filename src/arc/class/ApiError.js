@@ -37,7 +37,7 @@ export class ApiError extends Error {
 
     toString() {
         const { message, code } = this;
-        return message + (!code ? "" : ` (${code})`);
+        return message + (code == null ? "" : ` (${code})`);
     }
 
 }

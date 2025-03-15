@@ -6,7 +6,7 @@ import cors from "cors";
 const app = express();
 const PORT = info.port+1;
 
-const api = createApi({ isAsync:true });
+const api = createApi({ });
 
 
 app.use(express.json());
@@ -14,10 +14,17 @@ app.use(express.json());
 app.use(cors());
 
 app.get('/api', async (req, res) => {
-    const body = await api(3, _=>{
-        return new ApiError(56, "WHAT THE FUCK");
+    const body = api.code(3, _=>{
+        return "really good";
+    }, {timestamp:true});
 
-    });
+    res.send(body);
+});
+
+app.get('/error', async (req, res) => {
+    const body = api(_=>{
+        throw new Error("Unknown error");
+    }, {timestamp:true});
 
     res.send(body);
 });

@@ -1,8 +1,10 @@
-import { fetchExtra } from "./static";
-import { mrgOpt, mrgStr } from "../../arc/tool";
+import { fetchResolve } from "./static";
+import { mrgStr } from "../../arc/tool";
 import { Functionable } from "../../arc/class/Functionable";
 import { solid } from "@randajan/props";
+import { mrgOpt } from "../tool";
 
+//config: code, url, fetch, query, parseHeaders, trait, timestamp, onError
 
 export class Fetch extends Functionable {
 
@@ -15,12 +17,9 @@ export class Fetch extends Functionable {
 
         if (!_fetch) { throw new Error("Missing fetch function. Please provide it inconfig"); }
 
-        if (config) {
-            delete config.url;
-            delete config.fetch;
-        }
+        if (config) { delete config.fetch;}
 
-        super((url, opt, method) =>fetchExtra(_fetch, mrgStr(_url, url), mrgOpt(config, opt), method));
+        super((url, opt, method) =>fetchResolve(_fetch, mrgStr(_url, url), mrgOpt(config, opt), method));
 
         Object.freeze(config);
         solid(this, "config", config);
