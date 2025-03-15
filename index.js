@@ -7,7 +7,7 @@ slib(isBuild, {
     rebuildBuffer:isServer ? 500 : 100,
     lib:{
         minify:false,
-        entries:["client/index.js", "server/index.js"]
+        entries:["index.js", "client/index.js", "server/index.js"]
     },
     demo:{
         dir:isServer?"demo/server":"demo/client",
