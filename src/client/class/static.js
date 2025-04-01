@@ -4,8 +4,10 @@ import { ApiError } from "../../arc/class/ApiError";
 import { buildUrl } from "../../arc/url";
 import { end, start } from "../../arc/main";
 
-const prepareOpt = (opt, method)=>{
+const prepareOpt = (url, opt, method)=>{
     start(opt);
+
+    opt.url = buildUrl( mrgStr(opt.url, url), opt.query);
 
     if (method) { opt.method = method; }
     opt.headers['Accept'] = 'application/json';
@@ -44,11 +46,11 @@ const localReject = (opt, error, http)=>{
     return end({ ok:false, http, error }, opt);
 }
 
-const fetchExe = async (_fetch, url, opt) => {
+const fetchExe = async (_fetch, opt) => {
 
     let resp, body;
 
-    try { resp = await _fetch(buildUrl( mrgStr(opt.url, url), opt.query), opt); }
+    try { resp = await _fetch(opt.url, opt); }
     catch (err) { return localReject(opt, ApiError.is(err) ? err : ApiError.to(0, "Failed")); }
 
     const { ok, status, headers, statusText } = resp;
@@ -73,7 +75,7 @@ const fetchExe = async (_fetch, url, opt) => {
 };
 
 export const fetchResolve = (_fetch, url, opt, method)=>{
-    const prom = fetchExe(_fetch, url, prepareOpt(opt, method));
+    const prom = fetchExe(_fetch, prepareOpt(url, opt, method));
 
     if (opt.timeoutId) { prom.finally(_=>clearTimeout(opt.timeoutId)); }
     if (!opt.abortable) { return prom; }
