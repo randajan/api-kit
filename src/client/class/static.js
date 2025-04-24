@@ -1,8 +1,9 @@
+import info from "@randajan/simple-lib/info";
 import { solid } from "@randajan/props";
 import { isFn, mrgStr } from "../../arc/tool";
 import { ApiError } from "../../arc/class/ApiError";
 import { buildUrl } from "../../arc/url";
-import { end, start } from "../../arc/main";
+import { diffVersion, end, start } from "../../arc/main";
 
 const prepareOpt = (url, opt, method)=>{
     start(opt);
@@ -48,15 +49,30 @@ const localReject = (opt, error, http)=>{
 
 const fetchExe = async (_fetch, opt) => {
 
-    let resp, body;
+    let resp, raw, body;
 
     try { resp = await _fetch(opt.url, opt); }
     catch (err) { return localReject(opt, ApiError.is(err) ? err : ApiError.to(0, "Failed")); }
 
     const { ok, status, headers, statusText } = resp;
 
-    try { body = await resp.json(); }
-    catch { return localReject(opt, new ApiError(ok?3:4, ok?"Unreadable" : (statusText || status)), status); }
+    try { raw = await resp.json(); } catch {
+        return localReject(opt, new ApiError(ok?3:4, ok?"Unreadable" : (statusText || status)), status);
+    }
+    
+    const apv = raw[info.name];
+    
+    if (apv) {
+        body = raw;
+        const diff = diffVersion(apv);
+        const msg = `Detected @randajan/api-kit ${diff} version difference at '${opt.url}'. Server '${apv}' vs. client '${info.version}'`;
+        if (diff === "major") { console.error(msg); }
+        if (diff === "minor") { console.warn(msg); }
+    } else {
+        body = {};
+        try { body.result = opt.parseBody(raw); }
+        catch(err) { body.error = err.message || err; }
+    }
 
     if (body.error) {
         const { code, message } = body.error;
@@ -70,8 +86,7 @@ const fetchExe = async (_fetch, opt) => {
         body.headers = Object.freeze(Object.fromEntries(headers.entries()));
     }
     
-    const r = end(body, opt);
-    return opt.resultOnly ? r.result : r;
+    return end(body, opt);
 };
 
 export const fetchResolve = (_fetch, url, opt, method)=>{

@@ -2,7 +2,7 @@ import { fetchResolve } from "./static";
 import { Functionable } from "../../arc/class/Functionable";
 import { solid } from "@randajan/props";
 import { mrgOpt } from "../tool";
-import { configTrait } from "../../arc/opt";
+import { configTrait, createTrait } from "../../arc/opt";
 
 export class Fetch extends Functionable {
 
@@ -15,6 +15,7 @@ export class Fetch extends Functionable {
         if (!_fetch) { throw new Error("Missing fetch function. Please provide it inconfig"); }
 
         configTrait(config);
+        config.parseBody = createTrait(config.parseBody);
 
         delete config.fetch;
 

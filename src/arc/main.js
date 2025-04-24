@@ -1,5 +1,6 @@
 import { solids } from "@randajan/props";
-import { isFn } from "./tool";
+import { isFn, toStr } from "./tool";
+import { info } from "@randajan/simple-lib/info";
 
 
 export const start = (opt)=>{
@@ -34,5 +35,19 @@ export const end = (body, opt)=>{
     }
 
     endTime(body, opt.startAt);
-    return Object.freeze(body);
+    return opt.resultOnly ? body.result : Object.freeze(body);
+}
+
+export const diffVersion = (version)=>{
+    const v1 = toStr(info.version);
+    const v2 = toStr(version);
+
+    if (v1 === v2) { return }
+    
+    const f1 = v1.split(".");
+    const f2 = v2.split(".");
+
+    if (f1[0] !== f2[0]) { return "major"; }
+    if (f1[1] !== f2[1]) { return "minor"; }
+    if (f1[2] !== f2[2]) { return "patch"; }
 }

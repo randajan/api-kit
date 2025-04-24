@@ -6,7 +6,7 @@ import createFetch from "../../../dist/esm/client/index.mjs";
 
 window.fetchApi = createFetch({
     url:`http://localhost:${info.port+1}/`,
-    timeout:1000,
+    timeout:10000,
     trait:opt=>{
         console.log(opt);
         return opt;

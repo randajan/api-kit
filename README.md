@@ -42,6 +42,7 @@ const apiFetch = createFetch({
     parseHeaders:false,             //if true it will parse response headers
     resultOnly:false,               //if true it will return only result
     timestamp:false,                //if true it will calculate timestamps
+    parseBody:(body)=>body,         //custom parser for non api-kit server fetches only
     trait:(opt)=>opt,
     onOk:(resp, opt)=>{},
     onError:(resp, opt)=>{ },
