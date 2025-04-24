@@ -7,9 +7,10 @@
             "label": "NPM publish",
             "type": "shell",
             "command": "npm publish --access=public",
+            "dependsOrder": "sequence",
             "dependsOn": [
+                "GIT push",
                 "Create build",
-                "GIT push"
             ],
             "group": {
                 "kind": "build",

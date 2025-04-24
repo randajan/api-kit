@@ -7,7 +7,7 @@ import { tryFn, tryFnAsync } from "../tool";
 
 const apiExit = (resp, opt)=>{
     if (resp.error) { resp.error = ApiError.to(0, resp.error).rise(1).rise(opt.code); }
-    resp[info.name] = "1.0.0";
+    resp[info.name] = info.version;
     return end(resp, opt);
 }
 
