@@ -2,20 +2,31 @@ import { info } from '@randajan/simple-lib/node';
 import express from 'express';
 import createApi, { ApiError } from "../../../dist/esm/server/index.mjs";
 import cors from "cors";
+import bodyParser from 'body-parser';
 
 const app = express();
 const PORT = info.port+1;
 
 const api = createApi({ });
 
-
-app.use(express.json());
-
 app.use(cors());
 
-app.get('/api', async (req, res) => {
+
+
+
+app.post('/api/json', bodyParser.json(), async (req, res) => {
+
     const body = api.code(3, _=>{
-        return "really good";
+        return { msg:"really good", req:req.body };
+    }, {timestamp:true});
+
+    res.send(body);
+});
+
+app.post('/api/form', bodyParser.urlencoded(), async (req, res) => {
+
+    const body = api.code(3, _=>{
+        return { msg:"really good", req:req.body };
     }, {timestamp:true});
 
     res.send(body);

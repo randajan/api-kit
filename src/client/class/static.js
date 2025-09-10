@@ -4,6 +4,7 @@ import { isFn, mrgStr } from "../../arc/tool";
 import { ApiError } from "../../arc/class/ApiError";
 import { buildUrl } from "../../arc/url";
 import { diffVersion, end, start } from "../../arc/main";
+import { attachBodyDecoder, encodeBody } from "../../arc/types";
 
 const prepareOpt = (url, opt, method)=>{
     start(opt);
@@ -11,12 +12,10 @@ const prepareOpt = (url, opt, method)=>{
     opt.url = buildUrl( mrgStr(opt.url, url), opt.query);
 
     if (method) { opt.method = method; }
-    opt.headers['Accept'] = 'application/json';
 
-    if (opt.body) {
-        opt.headers["Content-Type"] = "application/json";
-        opt.body = JSON.stringify(opt.body);
-    }
+    if (opt.body) { encodeBody(opt); }
+
+    attachBodyDecoder(opt);
 
     const hasTimeout = opt.timeout > 0;
     if (opt.abortable || hasTimeout) {
@@ -56,7 +55,9 @@ const fetchExe = async (_fetch, opt) => {
 
     const { ok, status, headers, statusText } = resp;
 
-    try { raw = await resp.json(); } catch {
+    try {
+        raw = opt.decodeBody(await resp.text());
+    } catch {
         return localReject(opt, new ApiError(ok?3:4, ok?"Unreadable" : (statusText || status)), status);
     }
     

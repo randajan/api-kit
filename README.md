@@ -46,6 +46,8 @@ const apiFetch = createFetch({
     trait:(opt)=>opt,
     onOk:(resp, opt)=>{},
     onError:(resp, opt)=>{ },
+    requestType:"json",             // json or form, the 'type' property is fallback
+    responseType:"json",            // json or form, the 'type' property is fallback
     throwError:false
 });
 
