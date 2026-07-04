@@ -27,14 +27,17 @@ const endTime = (body, startAt)=>{
 }
 
 export const end = (body, opt)=>{
-    if (!body.error){
+    const hasError = !!body.error;
+
+    endTime(body, opt.startAt);
+
+    if (!hasError){
         if (isFn(opt.onOk)) { opt.onOk(body, opt); }
     } else {
         if (isFn(opt.onError)) { opt.onError(body, opt); }
-        if (opt.throwError) { throw body.error; }
+        if (opt.throwError || opt.resultOnly) { throw body.error; }
     }
 
-    endTime(body, opt.startAt);
     return opt.resultOnly ? body.result : Object.freeze(body);
 }
 

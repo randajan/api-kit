@@ -27,11 +27,11 @@ export class Fetch extends Functionable {
 
     extend(config) { return new Fetch(mrgOpt(this.config, config)); }
 
-    async get(url, opt) { return this(url, opt, "GET"); }
-    async post(url, opt) { return this(url, opt, "POST"); }
-    async put(url, opt) { return this(url, opt, "PUT"); }
-    async delete(url, opt) { return this(url, opt, "DELETE"); }
-    async patch(url, opt) { return this(url, opt, "PATCH"); }
-    async head(url, opt) { return this(url, opt, "HEAD"); }
-    async options(url, opt) { return this(url, opt, "OPTIONS"); }
+    get(url, opt) { return this(url, opt, "GET"); }
+    post(url, opt) { return this(url, opt, "POST"); }
+    put(url, opt) { return this(url, opt, "PUT"); }
+    delete(url, opt) { return this(url, opt, "DELETE"); }
+    patch(url, opt) { return this(url, opt, "PATCH"); }
+    head(url, opt) { return this(url, opt, "HEAD"); }
+    options(url, opt) { return this(url, opt, "OPTIONS"); }
 }

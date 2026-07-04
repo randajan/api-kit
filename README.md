@@ -54,6 +54,31 @@ const apiFetch = createFetch({
 
 ```
 
+### Response contract
+
+Unless `resultOnly` or `throwError` changes the flow, client calls return a response object with these flags:
+
+```javascript
+{
+    isOk:true,        //true when response has no error
+    isRemote:true,    //true when fetch received an HTTP response object
+    isApiKit:true,    //true when response contains the api-kit marker
+    statusCode:200,
+    result:{},
+    error:null
+}
+```
+
+Common combinations:
+
+```text
+isOk  isRemote  isApiKit
+true  true      true      successful api-kit response
+false true      true      api-kit error response
+false true      false     foreign API or HTTP error response
+false false     false     local transport error, timeout or abort
+```
+
 
 
 ## Support

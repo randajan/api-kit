@@ -6,8 +6,18 @@ import { tryFn, tryFnAsync } from "../tool";
 
 
 const apiExit = (resp, opt)=>{
-    if (resp.error) { resp.error = ApiError.to(0, resp.error).rise(1).rise(opt.code); }
+    const { exposeStack } = opt;
+
+    resp.statusCode = 200;
+
+    if (resp.error) {
+        resp.error = ApiError.to(0, resp.error, 500).rise(1).rise(opt.code);
+        resp.statusCode = resp.error.httpStatusCode;
+        resp.error.exposeStack(!!exposeStack);
+    }
+
     resp[info.name] = info.version;
+
     return end(resp, opt);
 }
 
@@ -21,6 +31,6 @@ export const apiResolve = (exe, opt)=>{
     if (opt.isAsync) { return apiAsync(exe, opt); }
 
     const resp = tryFn(exe);
-    if (!isProm(resp)) { return apiExit(resp, opt); } 
+    if (!isProm(resp)) { return apiExit(resp, opt); }
     return resp.then((resp)=>apiExit(resp, opt));
 }

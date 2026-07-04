@@ -5,22 +5,26 @@ import { mrgStr, toStr } from "../tool";
 
 export class ApiError extends Error {
 
-    static create(code, message) { return new ApiError(code, message); }
+    static create(code, message, httpStatusCode=400, remoteStack=undefined) {
+        return new ApiError(code, message, httpStatusCode, remoteStack);
+    }
 
     static is(any) { return any instanceof ApiError; }
 
-    static to(code, any) {
+    static to(code, any, httpStatusCode=500) {
         if (ApiError.is(any)) { return any; }
        
         const msg = toStr(any?.message || any) || "Unknown";
-        const apierr = ApiError.create(code, msg);
-        return solid(apierr, "stack", any.stack, false);
+        const apierr = ApiError.create(code, msg, httpStatusCode);
+        return solid(apierr, "stack", any?.stack);
     }
 
-    constructor(code, message) {
+    constructor(code, message, httpStatusCode=400, remoteStack=undefined) {
         super(message);
 
         safe(this, {}, "code", (t, f)=>mrgStr(t, f, "."));
+        solid(this, "httpStatusCode", httpStatusCode ?? 400, true);
+        solid(this, "remoteStack", remoteStack);
 
         this.rise(code);
     }
@@ -30,9 +34,17 @@ export class ApiError extends Error {
         return this;
     }
 
+    exposeStack(exposeStack=true) {
+        solid(this, "_exposeStack", !!exposeStack, false, true);
+        return this;
+    }
+
     toJSON() {
-        const { message } = this;
-        return {message, ...this};
+        const { message, stack, _exposeStack } = this;
+        const body = {message, ...this};
+        if (_exposeStack) { body.stack = stack; }
+        else { delete body.stack; }
+        return body;
     }
 
     toString() {
