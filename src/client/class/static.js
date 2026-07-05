@@ -1,143 +1,71 @@
 import info from "@randajan/simple-lib/info";
 import { solid } from "@randajan/props";
-import { isFn, mrgStr } from "../../arc/tool";
-import { ApiError } from "../../arc/class/ApiError";
-import { buildUrl } from "../../arc/url";
-import { diffVersion, end, start } from "../../arc/main";
-import { attachBodyDecoder, encodeBody } from "../../arc/types";
+import { end } from "../../arc/opt";
+import { diffVersion, abortError, decodeText, failedError, normalizeClientError, parseHeaders, prepareOpt, readText, reconstructApiError, statusError } from "../tool";
+import { FetchError } from "../../arc/class/FetchError";
 
-const prepareOpt = (url, opt, method)=>{
-    start(opt);
 
-    opt.url = buildUrl( mrgStr(opt.url, url), opt.query);
+const localReject = (err, opt)=>({ error:normalizeClientError(FetchError.is(err) ? err : failedError(err), opt) });
+const remoteReject = (err, opt)=>({ isRemote:true, error:normalizeClientError(err, opt) });
 
-    if (method) { opt.method = method; }
+const remoteResolve = async (resp, opt)=>{
+    const text = await readText(resp);
 
-    if (opt.body) { encodeBody(opt); }
-
-    attachBodyDecoder(opt);
-
-    const hasTimeout = opt.timeout > 0;
-    if (opt.abortable || hasTimeout) {
-        opt.abortController = new AbortController();
-        opt.signal = opt.abortController.signal;
+    //empty response
+    if (!text) {
+        if (resp.ok || resp.status === 304) { return { isRemote:true }; }
+        throw statusError(resp);
     }
 
-    if (hasTimeout) {
-        opt.timeoutId = setTimeout(() => opt.abortController?.abort(ApiError.create(1, "Timeout", 408)), opt.timeout);
+    const body = decodeText(resp, opt, text);
+    const ver = body?.[info.name];
+
+    //foreign response
+    if (!ver) {
+        if (resp.ok) { return { isRemote:true, result:body } }
+        throw statusError(resp);
     }
 
-    if (isFn(opt.trait)) { opt = opt.trait(opt) || opt; }
-
-    return opt;
-}
-
-const localReject = (opt, error)=>{
-    const { httpStatusCode } = error;
-
-    error.rise(0).rise(opt.code || 0);
-
-    return end({ isOk:false, isRemote:false, isApiKit:false, statusCode: httpStatusCode, error }, opt);
-}
-
-const statusError = ({ status, statusText })=>ApiError.create(4, statusText || status, status);
-const unreadableError = resp=>resp.ok ? ApiError.create(3, "Unreadable", 415) : statusError(resp);
-const foreignError = resp=>({ isApiKit:false, error:statusError(resp) });
-
-const readText = async resp=>{
-    try { return await resp.text(); }
-    catch { throw unreadableError(resp); }
-}
-
-const decodeText = (text, opt, resp)=>{
-    try { return opt.decodeBody(text); }
-    catch { throw unreadableError(resp); }
-}
-
-const resolveEmpty = resp=>{
-    if (!resp.ok && resp.status !== 304) { return foreignError(resp); }
-    return { result:null, isApiKit:false };
-}
-
-const resolveApiKit = (raw, opt)=>{
-    const apv = raw[info.name];
-    const diff = diffVersion(apv);
-    const msg = `Detected @randajan/api-kit ${diff} version difference at '${opt.url}'. Server '${apv}' vs. client '${info.version}'`;
-
-    if (diff === "major") { console.error(msg); }
-    if (diff === "minor") { console.warn(msg); }
-
-    raw.isApiKit = true;
-    return raw;
-}
-
-const resolveForeign = (raw, opt, resp)=>{
-    if (!resp.ok) { return foreignError(resp); }
-
-    const body = { isApiKit:false };
-
-    try { body.result = opt.parseBody(raw); }
-    catch(err) { body.error = err.message || err; }
+    //apikit response
+    body.isRemote = true;
+    body.isApiKit = true;
+    body.apiKitDiff = diffVersion(ver);
+    body.error = reconstructApiError(body.error);
 
     return body;
 }
 
-const resolveDecoded = (raw, opt, resp)=>{
-    if (raw?.[info.name]) { return resolveApiKit(raw, opt); }
-    return resolveForeign(raw, opt, resp);
-}
 
-const normalizeError = (body, opt, resp)=>{
-    if (!body.error || ApiError.is(body.error)) { return; }
-
-    const { code, message, stack, httpStatusCode } = body.error;
-    body.error = ApiError.create(
-        code || mrgStr(opt.code || 0, "1.0", "."),
-        message || body.error,
-        httpStatusCode ?? body.statusCode ?? resp.status,
-        stack
-    );
-}
-
-const remoteResolve = (body, opt, resp)=>{
-    normalizeError(body, opt, resp);
-
-    body.isOk = !body.error;
-    body.isRemote = true;
-    body.isApiKit = !!body.isApiKit;
-    body.statusCode = body.statusCode ?? body.error?.httpStatusCode ?? resp.status;
-
-    if (opt.parseHeaders) {
-        body.headers = Object.freeze(Object.fromEntries(resp.headers.entries()));
-    }
-
-    return end(body, opt);
-}
-
-const remoteReject = (opt, resp, error)=>remoteResolve({ isApiKit:false, error }, opt, resp);
-
-const fetchExe = async (_fetch, opt) => {
-
+const fetchBody = async (_fetch, opt) => {
     let resp, body;
 
     try { resp = await _fetch(opt.url, opt); }
-    catch (err) { return localReject(opt, ApiError.is(err) ? err : ApiError.to(0, "Failed", 503)); }
+    catch (err) { body = localReject(err, opt); }
 
-    try {
-        const text = await readText(resp);
-        body = text ? resolveDecoded(decodeText(text, opt, resp), opt, resp) : resolveEmpty(resp);
-    } catch (err) {
-        return remoteReject(opt, resp, ApiError.is(err) ? err : ApiError.to(0, err, 500));
-    }
+    try { body = body || await remoteResolve(resp, opt); }
+    catch (err) { body = remoteReject(err, opt); }
 
-    return remoteResolve(body, opt, resp);
+    const err = body.error;
+
+    body.isOk = !err;
+    body.isRemote = !!body.isRemote;
+    body.isApiKit = !!body.isApiKit;
+    body.statusCode = err?.httpStatusCode || resp?.status;
+    body.headers = parseHeaders(resp, opt);
+
+    body = end(body, opt);
+
+    return opt.resultOnly ? body.result : body;
 };
 
-export const fetchResolve = (_fetch, url, opt, method)=>{
-    const prom = fetchExe(_fetch, prepareOpt(url, opt, method));
+
+export const executeFetch = (_fetch, url, opt, method)=>{
+    opt = prepareOpt(url, opt, method);
+
+    const prom = fetchBody(_fetch, opt);
 
     if (opt.timeoutId) { prom.finally(_=>clearTimeout(opt.timeoutId)); }
-    if (!opt.abortable) { return prom; }
+    if (!opt.isAbortable) { return prom; }
 
-    return solid(prom, "abort", _=>opt.abortController?.abort(ApiError.create(2, "Aborted", 499)));
+    return solid(prom, "abort", _=>opt.abortController?.abort(abortError()));
 }

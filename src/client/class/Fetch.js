@@ -1,8 +1,9 @@
-import { fetchResolve } from "./static";
+import { executeFetch } from "./static";
 import { Functionable } from "../../arc/class/Functionable";
 import { solid } from "@randajan/props";
 import { mrgOpt } from "../tool";
-import { configTrait, createTrait } from "../../arc/opt";
+import { configTrait } from "../../arc/opt";
+
 
 export class Fetch extends Functionable {
 
@@ -12,14 +13,13 @@ export class Fetch extends Functionable {
         
         const _fetch = config.fetch || globalThis.fetch;
 
-        if (!_fetch) { throw new Error("Missing fetch function. Please provide it inconfig"); }
+        if (!_fetch) { throw new Error("Missing fetch function. Please provide it in config"); }
 
         configTrait(config);
-        config.parseBody = createTrait(config.parseBody);
 
         delete config.fetch;
 
-        super((url, opt, method) =>fetchResolve(_fetch, url, mrgOpt(config, opt), method));
+        super((url, opt, method) =>executeFetch(_fetch, url, mrgOpt(config, opt), method));
 
         Object.freeze(config);
         solid(this, "config", config);

@@ -1,19 +1,19 @@
 import info from "@randajan/simple-lib/info";
-import { ApiError } from "../../arc/class/ApiError"
-import { start, end } from "../../arc/main";
-import { isFn, isProm } from "../../arc/tool";
-import { tryFn, tryFnAsync } from "../tool";
+import { start, end } from "../../arc/opt";
+import { isProm } from "../../arc/tool";
+import { normalizeServerError, tryFn, tryFnAsync } from "../tool";
+
 
 
 const apiExit = (resp, opt)=>{
-    const { exposeStack } = opt;
+    const { exposeCause } = opt;
 
     resp.statusCode = 200;
 
     if (resp.error) {
-        resp.error = ApiError.to(0, resp.error, 500).rise(1).rise(opt.code);
+        resp.error = normalizeServerError(resp.error, opt);
         resp.statusCode = resp.error.httpStatusCode;
-        resp.error.exposeStack(!!exposeStack);
+        resp.error.exposeCause(!!exposeCause);
     }
 
     resp[info.name] = info.version;

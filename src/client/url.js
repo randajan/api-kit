@@ -1,4 +1,5 @@
 let _regexp = /^https?:\/\//i;
+
 export const buildUrl = (inputUrl, params)=>{
     if (!params) { return inputUrl; }
 

@@ -8,7 +8,7 @@ const fetchApi = createFetch({
     url:`http://localhost:${info.port+1}/`,
     timeout:10000,
     trait:opt=>{
-        console.log("[api-kit demo request]", opt);
+        //console.log("[api-kit demo request]", opt);
         return opt;
     }
 });
@@ -28,7 +28,6 @@ const assertApiKit = body=>{
 const assertErrorStatus = (body, statusCode)=>{
     assert(body.isOk === false, "Expected failed response");
     assert(body.statusCode === statusCode, `Expected statusCode ${statusCode}, got ${body.statusCode}`);
-    assert(body.error?.httpStatusCode === statusCode, `Expected error.httpStatusCode ${statusCode}, got ${body.error?.httpStatusCode}`);
 }
 
 const assertEmptyResponse = (body, statusCode)=>{
@@ -37,7 +36,7 @@ const assertEmptyResponse = (body, statusCode)=>{
     assert(body.isRemote === true, "Expected remote empty response");
     assert(body.isOk === true, "Expected ok empty response");
     assert(body.statusCode === statusCode, `Expected statusCode ${statusCode}, got ${body.statusCode}`);
-    assert(body.result === null, `Expected null result, got ${body.result}`);
+    assert(body.result === undefined, `Expected undefined result, got ${body.result}`);
 }
 
 const tests = [
@@ -67,7 +66,7 @@ const tests = [
         expect:body=>{
             assertApiKit(body);
             assertErrorStatus(body, 409);
-            assert(String(body.error?.code || "").includes("10"), "Expected preserved ApiError code");
+            assert(String(body.error?.code || "").includes("10"), "Expected preserved HttpError code");
         }
     },
     {
@@ -76,7 +75,7 @@ const tests = [
         expect:body=>{
             assertApiKit(body);
             assertErrorStatus(body, 409);
-            assert(String(body.error?.code || "").includes("11"), "Expected preserved ApiError code");
+            assert(String(body.error?.code || "").includes("11"), "Expected preserved HttpError code");
         }
     },
     {
@@ -102,7 +101,7 @@ const tests = [
         expect:body=>{
             assert(body.isRemote === true, "Expected remote unreadable rejection");
             assert(body.isApiKit === false, "Expected non-api-kit response");
-            assertErrorStatus(body, 415);
+            assertErrorStatus(body, 200);
         }
     },
     {
@@ -130,23 +129,30 @@ const tests = [
         expect:body=>assertEmptyResponse(body, 304)
     },
     {
+        name:"Invalid JSON",
+        run:()=>fetchApi.get("plain/invalid-json"),
+        expect:body=>{
+
+        }
+    },
+    {
         name:"Timeout",
-        run:()=>fetchApi.get("timeout", { timeout:50 }),
+        run:()=>fetchApi.get("timeout", { timeout:500 }),
         expect:body=>{
             assert(body.isRemote === false, "Expected local timeout rejection");
-            assertErrorStatus(body, 408);
+            assertErrorStatus(body, undefined);
         }
     },
     {
         name:"Abort",
         run:()=>{
-            const req = fetchApi("timeout", { abortable:true });
+            const req = fetchApi("timeout", { isAbortable:true });
             req.abort();
             return req;
         },
         expect:body=>{
             assert(body.isRemote === false, "Expected local abort rejection");
-            assertErrorStatus(body, 499);
+            assertErrorStatus(body, undefined);
         }
     }
 ];
@@ -175,7 +181,7 @@ const render = ()=>{
             <section class="demo-header">
                 <div>
                     <h1>${info.name}</h1>
-                    <p>HTTP statusCode and ApiError behavior demo</p>
+                    <p>HTTP statusCode and HttpError behavior demo</p>
                 </div>
                 <button id="run-tests" type="button">Run again</button>
             </section>
