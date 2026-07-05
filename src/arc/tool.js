@@ -1,5 +1,4 @@
 
-
 export const mrgObj = (a, b, def)=>{
     if (!a && !b) { return def; }
     if (!a) { return {...b}; }
